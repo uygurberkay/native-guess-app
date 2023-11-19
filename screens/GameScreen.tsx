@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Alert, FlatList } from 'react-native'
+import { View, Text, StyleSheet, Alert, FlatList, useWindowDimensions } from 'react-native'
 import React, { useEffect, useState } from 'react'
 
 import { MaterialCommunityIcons, Foundation  } from '@expo/vector-icons'; 
@@ -36,6 +36,8 @@ const GameScreen = ({userNumber, onGameOver}: any) => {
     const initialGuess = generateRandomBetween({ min: 1, max: 100, exclude: userNumber });
     const [currentGuess, setCurrentGuess] = useState(initialGuess);
     const [guessRounds, setGuessRounds] = useState([initialGuess]);
+    const {width, height} = useWindowDimensions();
+    console.log(width,height)
 
     useEffect(() => {
         if (currentGuess === userNumber) {
@@ -70,11 +72,10 @@ const GameScreen = ({userNumber, onGameOver}: any) => {
     }
 
     const guessRoundsListLenght = guessRounds.length;
-    return (  
-        <View style={styles.screen}>
-            <Title>Opponent's Guess</Title>
+
+    let content = (
+        <>
             <NumberContainer>{currentGuess}</NumberContainer>
-            <Text></Text>
             {/* GUESS */}
             <Card>
                 <InstructionText customStyle={{marginBottom: 12}}>Higher or lover?</InstructionText>
@@ -91,17 +92,44 @@ const GameScreen = ({userNumber, onGameOver}: any) => {
                     </View>
                 </View>
             </Card>
+        </>
+    )
+
+    if (width > 400 ){
+        content = (
+            <>
+                <View style={styles.buttonsContainerWide}>
+                <View style={styles.buttonContainer}>
+                        <PrimaryButton onPress={nextGuessHandler.bind(this, 'lower')}>
+                            <Foundation name="minus-circle" size={24} color={Colors.accent500} />
+                        </PrimaryButton>
+                    </View>
+                    <NumberContainer>{currentGuess}</NumberContainer>
+                    <View style={styles.buttonContainer}>
+                        <PrimaryButton onPress={nextGuessHandler.bind(this, 'greater')}>
+                            <MaterialCommunityIcons name="plus-circle-outline" size={24} color={Colors.accent500} />
+                        </PrimaryButton>
+                    </View>
+                </View>
+            </>
+        )
+    }
+
+    return (  
+        <View style={styles.screen}>
+            <Title>Opponent's Guess</Title>
+            {content}
             <View style={styles.listContainer}>
                 <FlatList 
                     data={guessRounds}
                     renderItem={(itemData) => (
                         <GuessLogItem 
-                            roundNumber={guessRoundsListLenght - itemData.index} 
-                            guess={itemData.item}
+                        roundNumber={guessRoundsListLenght - itemData.index} 
+                        guess={itemData.item}
                         >
                             {itemData.item}
                         </GuessLogItem>)}
-                    keyExtractor={(item) => item}
+                    keyExtractor={(guessRounds) => guessRounds}
                 />
             </View>
         </View>
@@ -112,6 +140,7 @@ const styles = StyleSheet.create({
     screen: {
         flex:1,
         padding: 24,
+        alignItems: 'center',
     },
     buttonContainer: {
         flex: 1,
@@ -125,6 +154,10 @@ const styles = StyleSheet.create({
     listContainer: {
         flex: 1,
         padding: 16,
+    },
+    buttonsContainerWide: {
+        flexDirection: "row",
+        alignItems: 'center',
     },
 })
 
